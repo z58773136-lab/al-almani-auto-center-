@@ -1,0 +1,3 @@
+[functions.bookings]
+verify_jwt = false
+
