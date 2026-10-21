@@ -190,3 +190,5 @@ footer { padding: 25px 0; background: #10212d; color: #a8b7bd; border: 0; }
   *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 
+
+.whatsapp-booking{display:flex;align-items:center;justify-content:center;margin-top:13px;padding:11px 14px;border-radius:8px;background:#20bd70;color:#072318;font-size:11px;font-weight:800;text-align:center;transition:background .2s,transform .2s}.whatsapp-booking:hover{background:#39d486;transform:translateY(-1px)}
