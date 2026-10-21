@@ -192,3 +192,5 @@ footer { padding: 25px 0; background: #10212d; color: #a8b7bd; border: 0; }
 
 
 .whatsapp-booking{display:flex;align-items:center;justify-content:center;margin-top:13px;padding:11px 14px;border-radius:8px;background:#20bd70;color:#072318;font-size:11px;font-weight:800;text-align:center;transition:background .2s,transform .2s}.whatsapp-booking:hover{background:#39d486;transform:translateY(-1px)}
+
+.discount-note{display:grid;gap:3px;margin:0 0 17px;padding:13px 15px;border:1px solid rgba(233,154,45,.42);border-radius:12px;background:linear-gradient(110deg,#fff6e7,#f0faf8);color:#253943;font-size:10px;transition:border-color .2s,background .2s}.discount-note strong{color:#a65c09;font-size:12px}.discount-note.applies{border-color:#24a78f;background:#e9f8f4;box-shadow:0 0 0 3px rgba(36,167,143,.08)}.discount-note.applies strong{color:#14735f}
