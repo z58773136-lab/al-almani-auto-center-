@@ -19,8 +19,29 @@
       <label>البريد الإلكتروني<input id="loginEmail" type="email" autocomplete="username" required placeholder="name@example.com"></label>
       <label>كلمة المرور<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••"></label>
       <button class="primary-button" type="submit"><i class="fa-solid fa-right-to-bracket"></i> دخول</button>
+      <button id="forgotPasswordButton" class="forgot-button" type="button">نسيت كلمة المرور؟</button>
     </form>
     <p id="loginMessage" class="message" role="status"></p>
+    <section id="resetRequestPanel" hidden>
+      <h2 class="reset-title">استعادة كلمة المرور</h2>
+      <p class="muted">اكتب بريد حسابك وسنرسل رابطًا آمنًا لإعادة تعيينها.</p>
+      <form id="resetRequestForm">
+        <label>البريد الإلكتروني<input id="resetEmail" type="email" autocomplete="username" required placeholder="name@example.com"></label>
+        <button class="primary-button" type="submit">إرسال رابط الاستعادة</button>
+        <button class="forgot-button" id="backToLoginButton" type="button">العودة لتسجيل الدخول</button>
+      </form>
+      <p id="resetRequestMessage" class="message" role="status"></p>
+    </section>
+    <section id="changePasswordPanel" hidden>
+      <h2 class="reset-title">تعيين كلمة مرور جديدة</h2>
+      <p class="muted">أنشئ كلمة مرور جديدة لا تقل عن 8 أحرف.</p>
+      <form id="changePasswordForm">
+        <label>كلمة المرور الجديدة<input id="newPassword" type="password" autocomplete="new-password" minlength="8" required></label>
+        <label>تأكيد كلمة المرور<input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required></label>
+        <button class="primary-button" type="submit">حفظ كلمة المرور</button>
+      </form>
+      <p id="changePasswordMessage" class="message" role="status"></p>
+    </section>
     <details class="setup-help"><summary>إعداد حساب المدير لأول مرة</summary><p>من لوحة Supabase افتح Authentication ثم Users وأنشئ حسابًا بالبريد وكلمة مرور. افتح المستخدم، وأضف في <b>App Metadata</b> القيمة <code>{"role":"admin"}</code>، ثم سجّل الدخول هنا. لا تضف الصلاحية في User Metadata.</p><a href="https://supabase.com/dashboard/project/yggipahasesvuhqqojgs/auth/users" target="_blank" rel="noopener">فتح إدارة المستخدمين في Supabase</a></details>
   </div>
 </section>
@@ -68,3 +89,4 @@
   </main>
 </div>
 </body></html>
+
