@@ -6,7 +6,7 @@ const $ = (id) => document.getElementById(id);
 const roleLabels = { admin: "مدير النظام", manager: "مدير المركز", accountant: "الحسابات", technician: "الفني" };
 const roles = ["admin", "manager", "accountant", "technician"];
 const statusLabels = { open: "مفتوح", diagnosing: "قيد الفحص", waiting_parts: "بانتظار قطع غيار", in_progress: "قيد التنفيذ", ready: "جاهز للتسليم", closed: "مكتمل", cancelled: "ملغي" };
-const bookingStatuses = ["تم استلام طلبك", "تم التواصل", "تم تأكيد الحجز", "قيد التنفيذ", "مكتمل", "ملغي"];
+const bookingStatuses = ["تم استلام طلبك", "تم التواصل", "تم تأكيد الحجز", "تم تحويل الحجز لأمر شغل", "قيد التنفيذ", "مكتمل", "ملغي"];
 const bookingStatusLabel = (status) => status === "تم استلام طلبك" ? "تم استلام الطلب" : status;
 const currency = (value) => new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 2 }).format(Number(value || 0)) + " ج.م";
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
@@ -132,7 +132,7 @@ function resetCustomerForm() {
 $("customerForm").addEventListener("submit", async event => {
   event.preventDefault();
   const id = $("customerId").value;
-  const record = { full_name: $("customerName").value.trim(), phone: normalizePhone($("customerPhone").value), email: $("customerEmail").value.trim() || null, notes: $("customerNotes").value.trim() || null };
+  const record = { full_name: $("customerName").value.trim(), phone: normalizePhone($("customerPhone").value), email: $("customerEmail").value.trim() || null, notes: $("customerNotes").value.trim() || null, updated_at: new Date().toISOString() };
   const query = id ? db.from("customers").update(record).eq("id", id) : db.from("customers").insert(record);
   const { error } = await query;
   if (error) { showMessage("تعذر حفظ العميل: " + error.message, "error"); return; }
@@ -145,7 +145,9 @@ async function loadBookings() {
   bookings = data || [];
   $("bookingsTable").innerHTML = bookings.length ? bookings.map(b => {
     const options = bookingStatuses.map(status => '<option value="' + escapeHtml(status) + '"' + (b.status === status ? " selected" : "") + '>' + escapeHtml(bookingStatusLabel(status)) + "</option>").join("");
-    return '<tr><td><b>' + escapeHtml(b.reference) + '</b></td><td>' + escapeHtml(b.owner_name) + '</td><td dir="ltr">' + escapeHtml(b.phone) + '</td><td>' + escapeHtml(b.car_make_model) + '<br><small>' + escapeHtml(b.booking_type) + '</small></td><td>' + dateText(b.created_at) + '</td><td><select class="status-select booking-status" data-id="' + escapeHtml(b.id) + '">' + options + '</select></td><td><button class="table-action make-order" data-id="' + escapeHtml(b.id) + '">أمر شغل</button></td></tr>';
+    const statusControl = currentRole === "accountant" ? escapeHtml(bookingStatusLabel(b.status)) : '<select class="status-select booking-status" data-id="' + escapeHtml(b.id) + '">' + options + '</select>';
+    const orderAction = ["admin", "manager", "technician"].includes(currentRole) ? '<button class="table-action make-order" data-id="' + escapeHtml(b.id) + '">أمر شغل</button>' : "—";
+    return '<tr><td><b>' + escapeHtml(b.reference) + '</b></td><td>' + escapeHtml(b.owner_name) + '</td><td dir="ltr">' + escapeHtml(b.phone) + '</td><td>' + escapeHtml(b.car_make_model) + '<br><small>' + escapeHtml(b.booking_type) + '</small></td><td>' + dateText(b.created_at) + '</td><td>' + statusControl + '</td><td>' + orderAction + '</td></tr>';
   }).join("") : '<tr><td colspan="7" class="empty">لا توجد حجوزات حتى الآن.</td></tr>';
 }
 $("bookingsTable").addEventListener("change", async event => {
