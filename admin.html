@@ -3,10 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#10131b">
+<meta name="description" content="برنامج إدارة عملاء ومواعيد وأوامر شغل وحسابات مركز الألماني المتكامل">
+<link rel="manifest" href="admin-manifest.json">
+<link rel="icon" href="icons/app-192.png" type="image/png">
 <title>إدارة مركز الألماني المتكامل</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="admin.css">
 <script src="supabase-config.js"></script>
+<script src="admin-install.js" defer></script>
 <script type="module" src="admin.js"></script>
 </head>
 <body>
@@ -19,6 +23,7 @@
       <label>البريد الإلكتروني<input id="loginEmail" type="email" autocomplete="username" required placeholder="name@example.com"></label>
       <label>كلمة المرور<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••"></label>
       <button class="primary-button" type="submit"><i class="fa-solid fa-right-to-bracket"></i> دخول</button>
+      <button id="installDesktopApp" class="secondary-button install-button" type="button"><i class="fa-solid fa-download"></i> تثبيت البرنامج على الكمبيوتر</button>
       <button id="forgotPasswordButton" class="forgot-button" type="button">نسيت كلمة المرور؟</button>
     </form>
     <p id="loginMessage" class="message" role="status"></p>
