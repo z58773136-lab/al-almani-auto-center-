@@ -556,41 +556,65 @@ header{background:rgba(13,16,24,.96);border-bottom:1px solid rgba(255,255,255,.0
             navLinks.classList.toggle('active');
         });
 
-        // نظام الحجز وتوليد الرقم المرجعي
-        document.getElementById('carBookingForm').addEventListener('submit', function(e) {
+        // حفظ الحجز في قاعدة البيانات ثم إتاحة تأكيده عبر واتساب
+        document.getElementById('carBookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const name = document.getElementById('clientName').value;
-            const phone = document.getElementById('clientPhone').value;
-            const car = document.getElementById('carModel').value;
+
+            const submitButton = this.querySelector('button[type="submit"]');
+            const name = document.getElementById('clientName').value.trim();
+            const phone = document.getElementById('clientPhone').value.trim();
+            const car = document.getElementById('carModel').value.trim();
             const service = document.getElementById('serviceType').value;
             const date = document.getElementById('bookingDate').value;
-            const notes = document.getElementById('notes').value;
-
-            // توليد رقم مرجعي عشوائي
-            const refCode = 'GER-' + Math.floor(100000 + Math.random() * 900000);
-
-            // حفظ الحجز في المتصفح المحلي
-            const bookingData = { refCode, name, phone, car, service, date, notes };
-            let bookings = JSON.parse(localStorage.getItem('carBookings')) || [];
-            bookings.push(bookingData);
-            localStorage.setItem('carBookings', JSON.stringify(bookings));
-
-            // رسالة النجاح
+            const notes = document.getElementById('notes').value.trim();
             const resultBox = document.getElementById('bookingResult');
+
+            submitButton.disabled = true;
             resultBox.style.display = 'block';
-            resultBox.className = 'success-box';
-            resultBox.innerHTML = `تم استلام طلبك بنجاح! رقم الحجز المرجعي الخاص بك: <strong>${refCode}</strong>.<br>جاري تحويلك لتأكيد الحجز عبر واتساب...`;
+            resultBox.className = '';
+            resultBox.textContent = 'جارٍ حفظ طلبك...';
 
-            // تجهيز رسالة الواتساب التلقائية
-            const whatsappMessage = `مرحباً، أريد تأكيد حجز صيانة:%0A- الاسم: ${name}%0A- الهاتف: ${phone}%0A- السيارة: ${car}%0A- الخدمة: ${service}%0A- التاريخ: ${date}%0A- الرقم المرجعي: ${refCode}`;
-            
-            setTimeout(() => {
-                window.open(`https://wa.me/201007411622?text=${whatsappMessage}`, '_blank');
-            }, 2000);
+            try {
+                const response = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': window.SUPABASE_CONFIG.publishableKey
+                    },
+                    body: JSON.stringify({
+                        action: 'create',
+                        name,
+                        phone,
+                        carMakeModel: car,
+                        bookingType: service,
+                        message: 'تاريخ الحجز المفضل: ' + date + (notes ? ' | ملاحظات: ' + notes : '')
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.booking) throw new Error(result.error || 'تعذر حفظ الحجز الآن.');
 
-            this.reset();
+                const reference = result.booking.reference;
+                const whatsappMessage = 'مرحباً، أريد تأكيد حجز في مركز الألماني المتكامل:%0A- الاسم: ' + encodeURIComponent(name) +
+                    '%0A- الهاتف: ' + encodeURIComponent(phone) +
+                    '%0A- السيارة: ' + encodeURIComponent(car) +
+                    '%0A- الخدمة: ' + encodeURIComponent(service) +
+                    '%0A- التاريخ: ' + encodeURIComponent(date) +
+                    '%0A- الرقم المرجعي: ' + encodeURIComponent(reference) +
+                    (notes ? '%0A- ملاحظات: ' + encodeURIComponent(notes) : '');
+
+                resultBox.className = 'success-box';
+                resultBox.innerHTML = 'تم حفظ طلبك في النظام. رقم الحجز المرجعي: <strong>' + reference +
+                    '</strong><br><a class="btn" style="margin-top:12px" target="_blank" rel="noopener" href="https://wa.me/201007411622?text=' +
+                    whatsappMessage + '">أرسل تفاصيل الحجز عبر واتساب</a>';
+                this.reset();
+            } catch (error) {
+                resultBox.className = '';
+                resultBox.textContent = error.message || 'تعذر حفظ الحجز. حاول مرة أخرى أو تواصل معنا عبر الهاتف.';
+                resultBox.style.color = '#ff6973';
+            } finally {
+                submitButton.disabled = false;
+            }
         });
     </script>
-<script src="app-install.js"></script></body>
+<script src="supabase-config.js"></script><script src="app-install.js"></script></body>
 </html>
