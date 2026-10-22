@@ -1,0 +1,27 @@
+{
+  "name": "مركز الألماني المتكامل للسيارات",
+  "short_name": "الألماني",
+  "description": "خدمات وصيانة السيارات في مركز الألماني المتكامل بفاقوس",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#10131b",
+  "theme_color": "#10131b",
+  "icons": [
+    {
+      "src": "./icons/app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
