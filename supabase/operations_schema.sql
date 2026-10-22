@@ -2,6 +2,13 @@
 -- Access is restricted by JWT app_metadata.role: admin, manager, accountant, technician.
 create schema if not exists private;
 revoke all on schema private from public, anon, authenticated;
+grant usage on schema private to authenticated;
+
+create or replace function private.current_staff_role()
+returns text language sql stable set search_path = ''
+as $ select coalesce((select auth.jwt())->'app_metadata'->>'role', '') $;
+revoke all on function private.current_staff_role() from public, anon;
+grant execute on function private.current_staff_role() to authenticated;
 
 create table if not exists public.customers (
   id uuid primary key default gen_random_uuid(),
@@ -56,6 +63,9 @@ create index if not exists customers_phone_idx on public.customers (phone);
 create index if not exists work_orders_customer_opened_idx on public.work_orders (customer_id, opened_at desc);
 create index if not exists work_orders_status_opened_idx on public.work_orders (status, opened_at desc);
 create index if not exists financial_transactions_date_type_idx on public.financial_transactions (transaction_date desc, transaction_type);
+create index if not exists work_orders_created_by_idx on public.work_orders (created_by);
+create index if not exists financial_transactions_work_order_id_idx on public.financial_transactions (work_order_id);
+create index if not exists financial_transactions_created_by_idx on public.financial_transactions (created_by);
 
 alter table public.customers enable row level security;
 alter table public.work_orders enable row level security;
@@ -69,45 +79,45 @@ grant insert, select, update on public.customers to service_role;
 
 drop policy if exists "staff manage customers" on public.customers;
 create policy "staff manage customers" on public.customers for all to authenticated
-  using (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','manager','accountant','technician']::text[]))
-  with check (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','manager','accountant','technician']::text[]));
+  using ((select private.current_staff_role()) = any (array['admin','manager','accountant','technician']::text[]))
+  with check ((select private.current_staff_role()) = any (array['admin','manager','accountant','technician']::text[]));
 
 drop policy if exists "staff read work orders" on public.work_orders;
 create policy "staff read work orders" on public.work_orders for select to authenticated
-  using (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','manager','accountant','technician']::text[]));
+  using ((select private.current_staff_role()) = any (array['admin','manager','accountant','technician']::text[]));
 drop policy if exists "authorized staff create work orders" on public.work_orders;
 create policy "authorized staff create work orders" on public.work_orders for insert to authenticated
-  with check (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','manager','technician']::text[]));
+  with check ((select private.current_staff_role()) = any (array['admin','manager','technician']::text[]));
 drop policy if exists "authorized staff update work orders" on public.work_orders;
 create policy "authorized staff update work orders" on public.work_orders for update to authenticated
-  using (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','manager','technician']::text[]))
-  with check (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','manager','technician']::text[]));
+  using ((select private.current_staff_role()) = any (array['admin','manager','technician']::text[]))
+  with check ((select private.current_staff_role()) = any (array['admin','manager','technician']::text[]));
 drop policy if exists "admin delete work orders" on public.work_orders;
 create policy "admin delete work orders" on public.work_orders for delete to authenticated
-  using (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = 'admin');
+  using ((select private.current_staff_role()) = 'admin');
 
 drop policy if exists "accounting read transactions" on public.financial_transactions;
 create policy "accounting read transactions" on public.financial_transactions for select to authenticated
-  using (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','accountant']::text[]));
+  using ((select private.current_staff_role()) = any (array['admin','accountant']::text[]));
 drop policy if exists "accounting create transactions" on public.financial_transactions;
 create policy "accounting create transactions" on public.financial_transactions for insert to authenticated
-  with check (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','accountant']::text[]));
+  with check ((select private.current_staff_role()) = any (array['admin','accountant']::text[]));
 drop policy if exists "accounting update transactions" on public.financial_transactions;
 create policy "accounting update transactions" on public.financial_transactions for update to authenticated
-  using (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','accountant']::text[]))
-  with check (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','accountant']::text[]));
+  using ((select private.current_staff_role()) = any (array['admin','accountant']::text[]))
+  with check ((select private.current_staff_role()) = any (array['admin','accountant']::text[]));
 drop policy if exists "admin delete transactions" on public.financial_transactions;
 create policy "admin delete transactions" on public.financial_transactions for delete to authenticated
-  using (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = 'admin');
+  using ((select private.current_staff_role()) = 'admin');
 
 grant select, update on public.booking_requests to authenticated;
 drop policy if exists "staff read booking requests" on public.booking_requests;
 create policy "staff read booking requests" on public.booking_requests for select to authenticated
-  using (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','manager','accountant','technician']::text[]));
+  using ((select private.current_staff_role()) = any (array['admin','manager','accountant','technician']::text[]));
 drop policy if exists "staff update booking requests" on public.booking_requests;
 create policy "staff update booking requests" on public.booking_requests for update to authenticated
-  using (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','manager','technician']::text[]))
-  with check (coalesce((select auth.jwt()->'app_metadata'->>'role'), '') = any (array['admin','manager','technician']::text[]));
+  using ((select private.current_staff_role()) = any (array['admin','manager','technician']::text[]))
+  with check ((select private.current_staff_role()) = any (array['admin','manager','technician']::text[]));
 
 create or replace function private.sync_booking_customer()
 returns trigger language plpgsql set search_path = '' as $$
