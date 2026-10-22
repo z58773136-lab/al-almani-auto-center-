@@ -580,7 +580,8 @@ header{background:rgba(13,16,24,.96);border-bottom:1px solid rgba(255,255,255,.0
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'apikey': window.SUPABASE_CONFIG.publishableKey
+                        'apikey': window.SUPABASE_CONFIG.publishableKey,
+                        'Authorization': 'Bearer ' + window.SUPABASE_CONFIG.publishableKey
                     },
                     body: JSON.stringify({
                         action: 'create',
