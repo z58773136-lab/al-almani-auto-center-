@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10131b">
+<title>إدارة مركز الألماني المتكامل</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="admin.css">
+<script src="supabase-config.js"></script>
+<script type="module" src="admin.js"></script>
+</head>
+<body>
+<section id="loginScreen" class="login-shell">
+  <div class="login-card">
+    <a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-car-side"></i></span><span>الألماني <b>المتكامل</b><small>لوحة إدارة المركز</small></span></a>
+    <h1>تسجيل دخول الموظفين</h1>
+    <p class="muted">أدخل بيانات حساب الإدارة للوصول إلى العملاء وأوامر الشغل والحسابات.</p>
+    <form id="loginForm">
+      <label>البريد الإلكتروني<input id="loginEmail" type="email" autocomplete="username" required placeholder="name@example.com"></label>
+      <label>كلمة المرور<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••"></label>
+      <button class="primary-button" type="submit"><i class="fa-solid fa-right-to-bracket"></i> دخول</button>
+    </form>
+    <p id="loginMessage" class="message" role="status"></p>
+    <details class="setup-help"><summary>إعداد حساب المدير لأول مرة</summary><p>من لوحة Supabase افتح Authentication ثم Users وأنشئ حسابًا بالبريد وكلمة مرور. افتح المستخدم، وأضف في <b>App Metadata</b> القيمة <code>{"role":"admin"}</code>، ثم سجّل الدخول هنا. لا تضف الصلاحية في User Metadata.</p><a href="https://supabase.com/dashboard/project/yggipahasesvuhqqojgs/auth/users" target="_blank" rel="noopener">فتح إدارة المستخدمين في Supabase</a></details>
+  </div>
+</section>
+<div id="adminApp" class="admin-layout" hidden>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-car-side"></i></span><span>الألماني <b>المتكامل</b><small>نظام إدارة المركز</small></span></a>
+    <nav id="sideNav">
+      <button class="nav-item active" data-view="dashboard"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</button>
+      <button class="nav-item" data-view="bookings"><i class="fa-solid fa-calendar-check"></i> حجوزات الموقع</button>
+      <button class="nav-item" data-view="customers"><i class="fa-solid fa-users"></i> العملاء</button>
+      <button class="nav-item" data-view="workorders"><i class="fa-solid fa-screwdriver-wrench"></i> أوامر الشغل</button>
+      <button class="nav-item" data-view="accounts" id="accountsNav"><i class="fa-solid fa-wallet"></i> الحسابات</button>
+    </nav>
+    <a class="back-site" href="index.html"><i class="fa-solid fa-arrow-right"></i> العودة للموقع</a>
+  </aside>
+  <main class="main-area">
+    <header class="topbar"><div><small>لوحة التحكم</small><h1 id="viewTitle">نظرة عامة</h1></div><div class="user-tools"><span id="roleBadge" class="role-badge"></span><button id="refreshButton" class="icon-button" title="تحديث البيانات"><i class="fa-solid fa-rotate"></i></button><button id="logoutButton" class="logout-button"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button></div></header>
+    <div id="appMessage" class="app-message" role="status"></div>
+    <section class="view active" id="view-dashboard">
+      <div class="welcome-panel"><div><span class="eyebrow">مركز الألماني المتكامل للسيارات</span><h2>إدارة يومك من مكان واحد</h2><p>تابع حجوزات الموقع والعملاء وأوامر الشغل وحركة الإيرادات والمصروفات.</p></div><i class="fa-solid fa-gauge-high"></i></div>
+      <div class="stats-grid">
+        <article class="stat-card"><span>طلبات الحجز</span><strong id="statBookings">—</strong><i class="fa-solid fa-calendar-check"></i></article>
+        <article class="stat-card"><span>العملاء</span><strong id="statCustomers">—</strong><i class="fa-solid fa-users"></i></article>
+        <article class="stat-card"><span>أوامر مفتوحة</span><strong id="statOrders">—</strong><i class="fa-solid fa-screwdriver-wrench"></i></article>
+        <article class="stat-card" id="financeStat"><span>صافي الحركة</span><strong id="statBalance">—</strong><i class="fa-solid fa-coins"></i></article>
+      </div>
+      <div class="panel"><div class="panel-heading"><div><h2>آخر أوامر الشغل</h2><p>أحدث الأعمال المسجلة في المركز</p></div><button class="text-button" data-go="workorders">كل الأوامر ←</button></div><div class="table-wrap"><table><thead><tr><th>رقم الأمر</th><th>العميل</th><th>السيارة</th><th>الخدمة</th><th>الحالة</th></tr></thead><tbody id="recentOrders"><tr><td colspan="5" class="empty">جار التحميل...</td></tr></tbody></table></div></div>
+    </section>
+    <section class="view" id="view-bookings">
+      <div class="panel"><div class="panel-heading"><div><h2>حجوزات الموقع</h2><p>طلبات العملاء وأرقامهم المرجعية</p></div></div><div class="table-wrap"><table><thead><tr><th>المرجع</th><th>العميل</th><th>الهاتف</th><th>السيارة والخدمة</th><th>تاريخ الطلب</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="bookingsTable"><tr><td colspan="7" class="empty">جار التحميل...</td></tr></tbody></table></div></div>
+    </section>
+    <section class="view" id="view-customers">
+      <div class="panel form-panel"><div class="panel-heading"><div><h2 id="customerFormTitle">إضافة عميل</h2><p>تُحفظ بيانات العملاء في قاعدة بيانات المركز</p></div></div><form id="customerForm" class="form-grid"><input id="customerId" type="hidden"><label>اسم العميل<input id="customerName" required maxlength="120" placeholder="الاسم بالكامل"></label><label>رقم الهاتف<input id="customerPhone" required type="tel" maxlength="30" placeholder="01xxxxxxxxx"></label><label class="wide">البريد الإلكتروني (اختياري)<input id="customerEmail" type="email" maxlength="160" placeholder="name@example.com"></label><label class="wide">ملاحظات<textarea id="customerNotes" rows="3" maxlength="1000" placeholder="ملاحظات عن العميل"></textarea></label><div class="form-actions wide"><button class="primary-button" type="submit" id="saveCustomer">حفظ العميل</button><button class="secondary-button" type="button" id="cancelCustomerEdit" hidden>إلغاء التعديل</button></div></form></div>
+      <div class="panel"><div class="panel-heading"><div><h2>سجل العملاء</h2><p id="customerCount">—</p></div><input class="search-input" id="customerSearch" placeholder="ابحث بالاسم أو الهاتف"></div><div class="table-wrap"><table><thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد الإلكتروني</th><th>تاريخ الإضافة</th><th></th></tr></thead><tbody id="customersTable"><tr><td colspan="5" class="empty">جار التحميل...</td></tr></tbody></table></div></div>
+    </section>
+    <section class="view" id="view-workorders">
+      <div class="panel form-panel"><div class="panel-heading"><div><h2>إنشاء أمر شغل</h2><p>سجل السيارة والخدمة والتكلفة التقديرية</p></div></div><form id="orderForm" class="form-grid"><label>العميل<select id="orderCustomer" required><option value="">اختر العميل</option></select></label><label>نوع الخدمة<input id="orderService" required maxlength="100" placeholder="مثال: سمكرة ورش"></label><label>نوع وموديل السيارة<input id="orderCar" required maxlength="120" placeholder="الماركة والموديل"></label><label>رقم اللوحة (اختياري)<input id="orderPlate" maxlength="40"></label><label>الحالة<select id="orderStatus"><option value="open">مفتوح</option><option value="diagnosing">قيد الفحص</option><option value="waiting_parts">بانتظار قطع غيار</option><option value="in_progress">قيد التنفيذ</option><option value="ready">جاهز للتسليم</option></select></label><label>موعد التسليم المتوقع<input id="orderPromise" type="date"></label><label>تكلفة العمالة التقديرية (ج.م)<input id="orderLabor" type="number" min="0" step="0.01" value="0"></label><label>تكلفة قطع الغيار التقديرية (ج.م)<input id="orderParts" type="number" min="0" step="0.01" value="0"></label><label class="wide">وصف العطل أو الأعمال المطلوبة<textarea id="orderDescription" rows="3" required maxlength="2000"></textarea></label><div class="form-actions wide"><button class="primary-button" type="submit">إنشاء أمر الشغل</button></div></form></div>
+      <div class="panel"><div class="panel-heading"><div><h2>أوامر الشغل</h2><p>تابع الحالة والتكاليف التقديرية</p></div><select class="filter-select" id="orderFilter"><option value="">كل الحالات</option><option value="open">مفتوح</option><option value="diagnosing">قيد الفحص</option><option value="waiting_parts">بانتظار قطع غيار</option><option value="in_progress">قيد التنفيذ</option><option value="ready">جاهز للتسليم</option><option value="closed">مكتمل</option><option value="cancelled">ملغي</option></select></div><div class="table-wrap"><table><thead><tr><th>رقم الأمر</th><th>العميل</th><th>السيارة</th><th>الخدمة</th><th>الإجمالي التقديري</th><th>الحالة</th></tr></thead><tbody id="ordersTable"><tr><td colspan="6" class="empty">جار التحميل...</td></tr></tbody></table></div></div>
+    </section>
+    <section class="view" id="view-accounts">
+      <div class="stats-grid account-stats"><article class="stat-card"><span>الإيرادات</span><strong id="incomeTotal">0 ج.م</strong><i class="fa-solid fa-arrow-trend-up"></i></article><article class="stat-card"><span>المصروفات</span><strong id="expenseTotal">0 ج.م</strong><i class="fa-solid fa-arrow-trend-down"></i></article><article class="stat-card"><span>الصافي</span><strong id="netTotal">0 ج.م</strong><i class="fa-solid fa-scale-balanced"></i></article></div>
+      <div class="panel form-panel"><div class="panel-heading"><div><h2>تسجيل حركة مالية</h2><p>سجل الإيرادات والمصروفات يدويًا</p></div></div><form id="transactionForm" class="form-grid"><label>نوع الحركة<select id="transactionType"><option value="income">إيراد</option><option value="expense">مصروف</option></select></label><label>المبلغ (ج.م)<input id="transactionAmount" type="number" required min="0.01" step="0.01"></label><label>التصنيف<input id="transactionCategory" required maxlength="80" placeholder="مثال: صيانة أو إيجار"></label><label>طريقة الدفع<select id="paymentMethod"><option value="cash">نقدي</option><option value="bank_transfer">تحويل بنكي</option><option value="card">بطاقة</option><option value="other">أخرى</option></select></label><label>ربط بأمر شغل (اختياري)<select id="transactionOrder"><option value="">بدون أمر شغل</option></select></label><label>التاريخ<input id="transactionDate" type="date" required></label><label class="wide">البيان<textarea id="transactionDescription" rows="2" maxlength="1000"></textarea></label><div class="form-actions wide"><button class="primary-button" type="submit">حفظ الحركة</button></div></form></div>
+      <div class="panel"><div class="panel-heading"><div><h2>سجل الحسابات</h2><p>الإيرادات والمصروفات المسجلة</p></div></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>التصنيف والبيان</th><th>أمر الشغل</th><th>طريقة الدفع</th><th>المبلغ</th></tr></thead><tbody id="transactionsTable"><tr><td colspan="6" class="empty">جار التحميل...</td></tr></tbody></table></div></div>
+    </section>
+  </main>
+</div>
+</body></html>
