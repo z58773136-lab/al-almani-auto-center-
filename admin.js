@@ -24,8 +24,67 @@ $("loginForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   $("loginMessage").textContent = "جار تسجيل الدخول...";
   const { data, error } = await db.auth.signInWithPassword({ email: $("loginEmail").value.trim(), password: $("loginPassword").value });
-  if (error) { $("loginMessage").textContent = "تعذر تسجيل الدخول. تحقق من البريد وكلمة المرور."; return; }
+  if (error) {
+    const message = error.message || "تعذر تسجيل الدخول.";
+    $("loginMessage").textContent = /invalid login credentials/i.test(message)
+      ? "البريد أو كلمة المرور غير صحيحة. استخدم «نسيت كلمة المرور؟» لإنشاء كلمة جديدة."
+      : /email not confirmed/i.test(message)
+        ? "يجب تأكيد البريد من رسالة Supabase قبل تسجيل الدخول."
+        : "تعذر تسجيل الدخول: " + message;
+    return;
+  }
   await openSession(data.session);
+});
+
+$("forgotPasswordButton").addEventListener("click", () => {
+  $("resetEmail").value = $("loginEmail").value.trim();
+  $("loginForm").hidden = true;
+  $("loginMessage").textContent = "";
+  $("resetRequestPanel").hidden = false;
+});
+
+$("backToLoginButton").addEventListener("click", () => {
+  $("resetRequestPanel").hidden = true;
+  $("loginForm").hidden = false;
+  $("resetRequestMessage").textContent = "";
+});
+
+$("resetRequestForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = event.submitter;
+  button.disabled = true;
+  $("resetRequestMessage").textContent = "جار إرسال رابط الاستعادة...";
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await db.auth.resetPasswordForEmail($("resetEmail").value.trim(), { redirectTo });
+  button.disabled = false;
+  $("resetRequestMessage").textContent = error
+    ? (error.message || "تعذر إرسال الرابط.") + " — أضف رابط صفحة الإدارة إلى قائمة Redirect URLs في Supabase."
+    : "إذا كان البريد مسجلًا، ستصلك رسالة استعادة. افتحها من نفس الجهاز ثم عيّن كلمة مرور جديدة.";
+});
+
+$("changePasswordForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const message = $("changePasswordMessage");
+  if ($("newPassword").value !== $("confirmPassword").value) {
+    message.textContent = "كلمتا المرور غير متطابقتين.";
+    return;
+  }
+  const button = event.submitter;
+  button.disabled = true;
+  message.textContent = "جار حفظ كلمة المرور...";
+  const { error } = await db.auth.updateUser({ password: $("newPassword").value });
+  button.disabled = false;
+  if (error) {
+    message.textContent = error.message || "تعذر تحديث كلمة المرور.";
+    return;
+  }
+  await db.auth.signOut();
+  $("changePasswordPanel").hidden = true;
+  $("loginForm").hidden = false;
+  $("loginScreen").hidden = false;
+  $("loginMessage").textContent = "تم تحديث كلمة المرور. سجّل الدخول بها الآن.";
+  $("newPassword").value = "";
+  $("confirmPassword").value = "";
 });
 
 async function openSession(activeSession) {
@@ -49,6 +108,13 @@ async function openSession(activeSession) {
 }
 
 db.auth.onAuthStateChange((event, activeSession) => {
+  if (event === "PASSWORD_RECOVERY") {
+    $("loginScreen").hidden = false;
+    $("adminApp").hidden = true;
+    $("loginForm").hidden = true;
+    $("resetRequestPanel").hidden = true;
+    $("changePasswordPanel").hidden = false;
+  }
   if (event === "SIGNED_OUT") {
     session = null;
     currentRole = "";
@@ -258,3 +324,4 @@ $("loginScreen").hidden = false;
 $("adminApp").hidden = true;
 const { data: sessionData } = await db.auth.getSession();
 if (sessionData.session) await openSession(sessionData.session);
+
