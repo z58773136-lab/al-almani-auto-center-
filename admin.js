@@ -43,6 +43,23 @@ $("forgotPasswordButton").addEventListener("click", () => {
   $("resetRequestPanel").hidden = false;
 });
 
+function showPasswordResetPanel() {
+  sessionStorage.setItem("adminPasswordResetPending", "1");
+  $("loginScreen").hidden = false;
+  $("adminApp").hidden = true;
+  $("loginForm").hidden = true;
+  $("resetRequestPanel").hidden = true;
+  $("verifyResetCodePanel").hidden = true;
+  $("changePasswordPanel").hidden = false;
+  history.replaceState(null, "", window.location.pathname + window.location.search + "#reset-password");
+}
+
+async function sendResetCode() {
+  const email = $("resetEmail").value.trim();
+  const redirectTo = window.location.origin + window.location.pathname;
+  return db.auth.resetPasswordForEmail(email, { redirectTo });
+}
+
 $("backToLoginButton").addEventListener("click", () => {
   $("resetRequestPanel").hidden = true;
   $("loginForm").hidden = false;
@@ -53,13 +70,53 @@ $("resetRequestForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = event.submitter;
   button.disabled = true;
-  $("resetRequestMessage").textContent = "جار إرسال رابط الاستعادة...";
-  const redirectTo = window.location.origin + window.location.pathname;
-  const { error } = await db.auth.resetPasswordForEmail($("resetEmail").value.trim(), { redirectTo });
+  $("resetRequestMessage").textContent = "جار إرسال رمز التحقق...";
+  const { error } = await sendResetCode();
   button.disabled = false;
-  $("resetRequestMessage").textContent = error
-    ? (error.message || "تعذر إرسال الرابط.") + " — أضف رابط صفحة الإدارة إلى قائمة Redirect URLs في Supabase."
-    : "إذا كان البريد مسجلًا، ستصلك رسالة استعادة. افتحها من نفس الجهاز ثم عيّن كلمة مرور جديدة.";
+  if (error) {
+    $("resetRequestMessage").textContent = error.message || "تعذر إرسال رمز التحقق.";
+    return;
+  }
+  $("resetRequestPanel").hidden = true;
+  $("verifyResetCodePanel").hidden = false;
+  $("verifyResetCodeMessage").textContent = "إذا كان البريد مسجلًا، سيصلك رمز تحقق. افحص صندوق الوارد والرسائل غير المرغوب فيها.";
+  $("resetCode").focus();
+});
+
+$("verifyResetCodeForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = event.submitter;
+  button.disabled = true;
+  $("verifyResetCodeMessage").textContent = "جار التحقق من الرمز...";
+  const { data, error } = await db.auth.verifyOtp({
+    email: $("resetEmail").value.trim(),
+    token: $("resetCode").value.trim(),
+    type: "recovery",
+  });
+  button.disabled = false;
+  if (error || !data.session) {
+    $("verifyResetCodeMessage").textContent = error?.message || "الرمز غير صحيح أو منتهي الصلاحية. أعد إرساله وحاول مرة أخرى.";
+    return;
+  }
+  session = data.session;
+  showPasswordResetPanel();
+});
+
+$("resendResetCodeButton").addEventListener("click", async (event) => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  $("verifyResetCodeMessage").textContent = "جار إعادة إرسال الرمز...";
+  const { error } = await sendResetCode();
+  button.disabled = false;
+  $("verifyResetCodeMessage").textContent = error
+    ? (error.message || "تعذر إرسال الرمز. انتظر قليلًا ثم حاول مرة أخرى.")
+    : "إذا كان البريد مسجلًا، أُعيد إرسال رمز التحقق.";
+});
+
+$("editResetEmailButton").addEventListener("click", () => {
+  $("verifyResetCodePanel").hidden = true;
+  $("resetRequestPanel").hidden = false;
+  $("verifyResetCodeMessage").textContent = "";
 });
 
 $("changePasswordForm").addEventListener("submit", async (event) => {
@@ -78,6 +135,8 @@ $("changePasswordForm").addEventListener("submit", async (event) => {
     message.textContent = error.message || "تعذر تحديث كلمة المرور.";
     return;
   }
+  sessionStorage.removeItem("adminPasswordResetPending");
+  history.replaceState(null, "", window.location.pathname + window.location.search);
   await db.auth.signOut();
   $("changePasswordPanel").hidden = true;
   $("loginForm").hidden = false;
@@ -108,13 +167,7 @@ async function openSession(activeSession) {
 }
 
 db.auth.onAuthStateChange((event, activeSession) => {
-  if (event === "PASSWORD_RECOVERY") {
-    $("loginScreen").hidden = false;
-    $("adminApp").hidden = true;
-    $("loginForm").hidden = true;
-    $("resetRequestPanel").hidden = true;
-    $("changePasswordPanel").hidden = false;
-  }
+  if (event === "PASSWORD_RECOVERY") showPasswordResetPanel();
   if (event === "SIGNED_OUT") {
     session = null;
     currentRole = "";
@@ -323,5 +376,5 @@ $("transactionDate").value = localDate();
 $("loginScreen").hidden = false;
 $("adminApp").hidden = true;
 const { data: sessionData } = await db.auth.getSession();
-if (sessionData.session) await openSession(sessionData.session);
+if (sessionData.session && sessionStorage.getItem("adminPasswordResetPending")) {\n  session = sessionData.session;\n  showPasswordResetPanel();\n} else if (sessionData.session) await openSession(sessionData.session);
 
