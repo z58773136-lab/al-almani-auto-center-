@@ -29,13 +29,24 @@
     <p id="loginMessage" class="message" role="status"></p>
     <section id="resetRequestPanel" hidden>
       <h2 class="reset-title">استعادة كلمة المرور</h2>
-      <p class="muted">اكتب بريد حسابك وسنرسل رابطًا آمنًا لإعادة تعيينها.</p>
+      <p class="muted">اكتب بريد حسابك وسنرسل رمز تحقق لمرة واحدة.</p>
       <form id="resetRequestForm">
         <label>البريد الإلكتروني<input id="resetEmail" type="email" autocomplete="username" required placeholder="name@example.com"></label>
-        <button class="primary-button" type="submit">إرسال رابط الاستعادة</button>
+        <button class="primary-button" type="submit">إرسال رمز التحقق</button>
         <button class="forgot-button" id="backToLoginButton" type="button">العودة لتسجيل الدخول</button>
       </form>
       <p id="resetRequestMessage" class="message" role="status"></p>
+    </section>
+    <section id="verifyResetCodePanel" hidden>
+      <h2 class="reset-title">تأكيد رمز الاستعادة</h2>
+      <p class="muted">أدخل الرمز المكوّن من 6 أرقام الذي وصل إلى بريدك الإلكتروني.</p>
+      <form id="verifyResetCodeForm">
+        <label>رمز التحقق<input id="resetCode" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="123456"></label>
+        <button class="primary-button" type="submit">تأكيد الرمز</button>
+        <button class="forgot-button" id="resendResetCodeButton" type="button">إعادة إرسال الرمز</button>
+        <button class="forgot-button" id="editResetEmailButton" type="button">تعديل البريد الإلكتروني</button>
+      </form>
+      <p id="verifyResetCodeMessage" class="message" role="status"></p>
     </section>
     <section id="changePasswordPanel" hidden>
       <h2 class="reset-title">تعيين كلمة مرور جديدة</h2>
