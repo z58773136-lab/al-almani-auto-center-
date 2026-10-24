@@ -376,5 +376,8 @@ $("transactionDate").value = localDate();
 $("loginScreen").hidden = false;
 $("adminApp").hidden = true;
 const { data: sessionData } = await db.auth.getSession();
-if (sessionData.session && sessionStorage.getItem("adminPasswordResetPending")) {\n  session = sessionData.session;\n  showPasswordResetPanel();\n} else if (sessionData.session) await openSession(sessionData.session);
+if (sessionData.session && sessionStorage.getItem("adminPasswordResetPending")) {
+  session = sessionData.session;
+  showPasswordResetPanel();
+} else if (sessionData.session) await openSession(sessionData.session);
 
