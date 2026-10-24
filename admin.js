@@ -56,8 +56,7 @@ function showPasswordResetPanel() {
 
 async function sendResetCode() {
   const email = $("resetEmail").value.trim();
-  const redirectTo = window.location.origin + window.location.pathname;
-  return db.auth.resetPasswordForEmail(email, { redirectTo });
+  return db.auth.resetPasswordForEmail(email);
 }
 
 $("backToLoginButton").addEventListener("click", () => {
