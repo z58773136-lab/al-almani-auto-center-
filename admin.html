@@ -17,48 +17,23 @@
 <section id="loginScreen" class="login-shell">
   <div class="login-card">
     <a class="brand" href="index.html"><span class="brand-mark"><i class="fa-solid fa-car-side"></i></span><span>الألماني <b>المتكامل</b><small>لوحة إدارة المركز</small></span></a>
-    <h1>تسجيل دخول الموظفين</h1>
-    <p class="muted">أدخل بيانات حساب الإدارة للوصول إلى العملاء وأوامر الشغل والحسابات.</p>
+    <h1>تسجيل الدخول</h1>
+    <p class="muted">أدخل بريد الموظف المسجل لإرسال رمز دخول لمرة واحدة.</p>
     <form id="loginForm">
       <label>البريد الإلكتروني<input id="loginEmail" type="email" autocomplete="username" required placeholder="name@example.com"></label>
-      <label>كلمة المرور<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="••••••••"></label>
-      <button class="primary-button" type="submit"><i class="fa-solid fa-right-to-bracket"></i> دخول</button>
-      <button id="installDesktopApp" class="secondary-button install-button" type="button"><i class="fa-solid fa-download"></i> تثبيت البرنامج على الكمبيوتر</button>
-      <button id="forgotPasswordButton" class="forgot-button" type="button">نسيت كلمة المرور؟</button>
+      <button class="primary-button" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال رمز الدخول</button>
     </form>
+    <section id="verifyLoginCodePanel" hidden>
+      <h2 class="reset-title">تأكيد رمز الدخول</h2>
+      <p class="muted">أدخل الرمز المكوّن من 6 أرقام المرسل إلى بريدك.</p>
+      <form id="verifyLoginCodeForm">
+        <label>رمز الدخول<input id="loginCode" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="123456"></label>
+        <button class="primary-button" type="submit">تأكيد الرمز والدخول</button>
+        <button class="forgot-button" id="resendLoginCodeButton" type="button">إعادة إرسال الرمز</button>
+        <button class="forgot-button" id="editLoginEmailButton" type="button">تعديل البريد الإلكتروني</button>
+      </form>
+    </section>
     <p id="loginMessage" class="message" role="status"></p>
-    <section id="resetRequestPanel" hidden>
-      <h2 class="reset-title">استعادة كلمة المرور</h2>
-      <p class="muted">اكتب بريد حسابك وسنرسل رمز تحقق لمرة واحدة.</p>
-      <form id="resetRequestForm">
-        <label>البريد الإلكتروني<input id="resetEmail" type="email" autocomplete="username" required placeholder="name@example.com"></label>
-        <button class="primary-button" type="submit">إرسال رمز التحقق</button>
-        <button class="forgot-button" id="backToLoginButton" type="button">العودة لتسجيل الدخول</button>
-      </form>
-      <p id="resetRequestMessage" class="message" role="status"></p>
-    </section>
-    <section id="verifyResetCodePanel" hidden>
-      <h2 class="reset-title">تأكيد رمز الاستعادة</h2>
-      <p class="muted">أدخل الرمز المكوّن من 6 أرقام الذي وصل إلى بريدك الإلكتروني.</p>
-      <form id="verifyResetCodeForm">
-        <label>رمز التحقق<input id="resetCode" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="123456"></label>
-        <button class="primary-button" type="submit">تأكيد الرمز</button>
-        <button class="forgot-button" id="resendResetCodeButton" type="button">إعادة إرسال الرمز</button>
-        <button class="forgot-button" id="editResetEmailButton" type="button">تعديل البريد الإلكتروني</button>
-      </form>
-      <p id="verifyResetCodeMessage" class="message" role="status"></p>
-    </section>
-    <section id="changePasswordPanel" hidden>
-      <h2 class="reset-title">تعيين كلمة مرور جديدة</h2>
-      <p class="muted">أنشئ كلمة مرور جديدة لا تقل عن 8 أحرف.</p>
-      <form id="changePasswordForm">
-        <label>كلمة المرور الجديدة<input id="newPassword" type="password" autocomplete="new-password" minlength="8" required></label>
-        <label>تأكيد كلمة المرور<input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required></label>
-        <button class="primary-button" type="submit">حفظ كلمة المرور</button>
-      </form>
-      <p id="changePasswordMessage" class="message" role="status"></p>
-    </section>
-    <details class="setup-help"><summary>إعداد حساب المدير لأول مرة</summary><p>من لوحة Supabase افتح Authentication ثم Users وأنشئ حسابًا بالبريد وكلمة مرور. افتح المستخدم، وأضف في <b>App Metadata</b> القيمة <code>{"role":"admin"}</code>، ثم سجّل الدخول هنا. لا تضف الصلاحية في User Metadata.</p><a href="https://supabase.com/dashboard/project/yggipahasesvuhqqojgs/auth/users" target="_blank" rel="noopener">فتح إدارة المستخدمين في Supabase</a></details>
   </div>
 </section>
 <div id="adminApp" class="admin-layout" hidden>
